@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'main_navigation_screen.dart';
-import '../globals.dart';
+import '../globals.dart' as globals; // Good practice to prefix globals
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +11,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _nameController = TextEditingController();
+
+  // STRICT ADDITION: Prevent Memory Leaks
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +53,23 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
                 onPressed: () {
-                  if (_nameController.text.isNotEmpty) {
-                    setState(() {
-                      currentUserName =
-                          _nameController.text; // Updates global name
-                    });
+                  // .trim() removes accidental spaces
+                  if (_nameController.text.trim().isNotEmpty) {
+                    // Removed setState, just update the global directly
+                    globals.currentUserName = _nameController.text.trim();
+
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const MainNavigationScreen(),
+                      ),
+                    );
+                  } else {
+                    // UX Fix: Show an error if the field is empty
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Please enter your name to continue."),
+                        backgroundColor: Colors.redAccent,
                       ),
                     );
                   }
