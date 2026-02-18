@@ -8,7 +8,7 @@ class LeaderboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
-        // Fetch rankings from Cloud Firestore, sorted by highest score and latest timestamp
+        // Fetch rankings from Cloud Firestore sorted by highest score
         stream: FirebaseFirestore.instance
             .collection('leaderboard')
             .orderBy('score', descending: true)
@@ -67,7 +67,6 @@ class LeaderboardScreen extends StatelessWidget {
                           fontSize: 16,
                         ),
                       ),
-                      // Displaying the time taken from your new stopwatch feature
                       Text(
                         "Time: ${data['timeTaken'] ?? '--:--'}",
                         style: const TextStyle(
@@ -86,4 +85,3 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 }
-r

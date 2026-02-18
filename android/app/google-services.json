@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "122021072464",
-    "project_id": "awesomeproject-bfb59",
-    "storage_bucket": "awesomeproject-bfb59.firebasestorage.app"
+    "project_number": "85396120151",
+    "project_id": "quizproflutter",
+    "storage_bucket": "quizproflutter.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:122021072464:android:54d0521618b4ae01964b55",
+        "mobilesdk_app_id": "1:85396120151:android:591d6cc1517c2c26337912",
         "android_client_info": {
           "package_name": "com.example.quizproflutter"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAYgAYnj9Jr7c8i4mYt18zacVfneuyb6Do"
+          "current_key": "AIzaSyAR0oOYE7JNVjTLATuBe9s_LeWZyj5K8lk"
         }
       ],
       "services": {

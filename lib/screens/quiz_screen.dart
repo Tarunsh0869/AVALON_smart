@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // REQUIRED: For Cloud Database
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import 'dart:math';
 import '../globals.dart' as globals;
 
@@ -14,155 +15,146 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   int currentQuestionIndex = 0;
   int score = 0;
-
-  // Changed from 'late' to an empty list so we can show a loading spinner
   List<Map<String, dynamic>> questions = [];
-  bool isLoading = true; // Controls the loading screen
+  bool isLoading = true;
+  Timer? _timer;
+  int _secondsElapsed = 0;
 
   @override
   void initState() {
     super.initState();
-    // 1. Fetch live questions from Firebase instead of the local list
     _fetchQuestionsFromFirebase();
+    _startTimer();
   }
 
-  // ---------------------------------------------------------
-  // NEW: Firebase Cloud Fetch Logic
-  // ---------------------------------------------------------
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) setState(() => _secondsElapsed++);
+    });
+  }
+
+  String _formatTime(int seconds) {
+    int mins = seconds ~/ 60;
+    int secs = seconds % 60;
+    return "${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}";
+  }
+
   Future<void> _fetchQuestionsFromFirebase() async {
     try {
-      // Ask Firebase for documents where 'category' matches the clicked tag
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('question_bank')
           .where('category', isEqualTo: widget.category)
           .get();
 
-      // Convert the cloud documents into your normal list format
       List<Map<String, dynamic>> fetchedQuestions = snapshot.docs.map((doc) {
-        return {
-          "q": doc['q'],
-          "a": List<String>.from(doc['a']), // Converts to a Dart List
-          "c": doc['c'],
-        };
+        return {"q": doc['q'], "a": List<String>.from(doc['a']), "c": doc['c']};
       }).toList();
 
-      // Apply your exact Smart Shuffle logic
-      fetchedQuestions.shuffle(Random());
-      for (var q in fetchedQuestions) {
-        String correctAnswerText = q['a'][q['c']];
-        List<String> shuffledOptions = List<String>.from(q['a']);
-        shuffledOptions.shuffle(Random());
-        q['a'] = shuffledOptions;
-        q['correct_text'] = correctAnswerText;
+      if (fetchedQuestions.isNotEmpty) fetchedQuestions.shuffle(Random());
+      if (mounted) {
+        setState(() {
+          questions = fetchedQuestions;
+          isLoading = false;
+        });
       }
-
-      // Update the screen with the fetched data
-      setState(() {
-        questions = fetchedQuestions;
-        isLoading = false; // Turn off the spinner
-      });
     } catch (e) {
-      print("Error fetching from Firebase: $e");
-      setState(() {
-        isLoading = false; // Stop spinning even if there is an error
-      });
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
   void _checkAnswer(String selectedAnswer) {
-    if (selectedAnswer == questions[currentQuestionIndex]['correct_text']) {
-      score++;
-    }
+    String correctText =
+        questions[currentQuestionIndex]['a'][questions[currentQuestionIndex]['c']];
+    if (selectedAnswer == correctText) score++;
+
     setState(() {
       if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
       } else {
+        _timer?.cancel();
         _showCelebration();
       }
     });
   }
 
-  // Made async so it can wait for the cloud upload
   void _showCelebration() async {
-    // ---------------------------------------------------------
-    // NEW: Firebase Cloud Write Logic
-    // ---------------------------------------------------------
-    // Push the final score securely to the Firebase Leaderboard
+    // Saves completion time and score to Cloud Firestore
     await FirebaseFirestore.instance.collection('leaderboard').add({
       "name": globals.currentUserName,
       "score": score,
       "category": widget.category,
-      "timestamp": FieldValue.serverTimestamp(), // Helps sort exact ties
+      "timeTaken": _formatTime(_secondsElapsed),
+      "timestamp": FieldValue.serverTimestamp(),
     });
 
-    // Keep updating the local globals so it's instantly ready
-    globals.sessionLeaderboard.add({
-      "name": globals.currentUserName,
-      "score": score,
-      "category": widget.category,
-    });
-
-    // Required by Flutter when using 'await' before a Dialog popup
     if (!mounted) return;
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Quiz Complete!", textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.emoji_events, color: Colors.amber, size: 80),
-            const SizedBox(height: 16),
+            const Icon(Icons.timer_outlined, size: 60, color: Colors.indigo),
+            const SizedBox(height: 15),
             Text(
-              "Congratulations, ${globals.currentUserName}!",
+              "Time Taken: ${_formatTime(_secondsElapsed)}",
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            Text("Final Score: $score / ${questions.length}"),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Closes the popup
-                Navigator.pop(context); // Takes you back to the Dashboard
-              },
-              child: const Text("Finish"),
-            ),
+            Text("Score: $score / ${questions.length}"),
           ],
         ),
+        actions: [
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text("Return to Home"),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // NEW: Show a loading spinner while waiting for Firebase
-    if (isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: Text("${widget.category} Assessment")),
-        body: const Center(
-          child: CircularProgressIndicator(color: Colors.indigo),
-        ),
+    if (isLoading)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (questions.isEmpty)
+      return const Scaffold(
+        body: Center(child: Text("No questions available.")),
       );
-    }
 
-    // Safety check if Firebase has no questions for this category
-    if (questions.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text("${widget.category} Assessment")),
-        body: const Center(
-          child: Text(
-            "No questions found in the cloud yet.",
-            style: TextStyle(fontSize: 18),
-          ),
-        ),
-      );
-    }
-
-    // Your exact UI for the quiz body
     var q = questions[currentQuestionIndex];
     return Scaffold(
-      appBar: AppBar(title: Text("${widget.category} Assessment")),
+      appBar: AppBar(
+        title: Text(widget.category),
+        actions: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: Text(
+                _formatTime(_secondsElapsed),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -173,7 +165,7 @@ class _QuizScreenState extends State<QuizScreen> {
             const SizedBox(height: 40),
             Text(
               q['q'],
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),

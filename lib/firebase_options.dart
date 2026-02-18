@@ -41,48 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDldxDPrY4-_stJ3iHvHPhc7GxhnxqVfjQ',
-    appId: '1:122021072464:web:d8c278cc650a4e3f964b55',
-    messagingSenderId: '122021072464',
-    projectId: 'awesomeproject-bfb59',
-    authDomain: 'awesomeproject-bfb59.firebaseapp.com',
-    storageBucket: 'awesomeproject-bfb59.firebasestorage.app',
-    measurementId: 'G-ZZBH9WJ3HV',
+    apiKey: 'AIzaSyBaSKT70pXHHNF3CzWrg0TA4YO8d49meVE',
+    appId: '1:85396120151:web:219c41b1fff41e02337912',
+    messagingSenderId: '85396120151',
+    projectId: 'quizproflutter',
+    authDomain: 'quizproflutter.firebaseapp.com',
+    storageBucket: 'quizproflutter.firebasestorage.app',
+    measurementId: 'G-H96GB3ZG0N',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAYgAYnj9Jr7c8i4mYt18zacVfneuyb6Do',
-    appId: '1:122021072464:android:54d0521618b4ae01964b55',
-    messagingSenderId: '122021072464',
-    projectId: 'awesomeproject-bfb59',
-    storageBucket: 'awesomeproject-bfb59.firebasestorage.app',
+    apiKey: 'AIzaSyAR0oOYE7JNVjTLATuBe9s_LeWZyj5K8lk',
+    appId: '1:85396120151:android:591d6cc1517c2c26337912',
+    messagingSenderId: '85396120151',
+    projectId: 'quizproflutter',
+    storageBucket: 'quizproflutter.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCjLym3QrYoSLk4JJoRVQuyXmX0HMzUDfo',
-    appId: '1:122021072464:ios:ff515b3bd9b92456964b55',
-    messagingSenderId: '122021072464',
-    projectId: 'awesomeproject-bfb59',
-    storageBucket: 'awesomeproject-bfb59.firebasestorage.app',
+    apiKey: 'AIzaSyAZuayapR1x4YbZhrW7NsOpHKM5xtnIWb8',
+    appId: '1:85396120151:ios:329498781cdaa92f337912',
+    messagingSenderId: '85396120151',
+    projectId: 'quizproflutter',
+    storageBucket: 'quizproflutter.firebasestorage.app',
     iosBundleId: 'com.example.quizproflutter',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCjLym3QrYoSLk4JJoRVQuyXmX0HMzUDfo',
-    appId: '1:122021072464:ios:ff515b3bd9b92456964b55',
-    messagingSenderId: '122021072464',
-    projectId: 'awesomeproject-bfb59',
-    storageBucket: 'awesomeproject-bfb59.firebasestorage.app',
+    apiKey: 'AIzaSyAZuayapR1x4YbZhrW7NsOpHKM5xtnIWb8',
+    appId: '1:85396120151:ios:329498781cdaa92f337912',
+    messagingSenderId: '85396120151',
+    projectId: 'quizproflutter',
+    storageBucket: 'quizproflutter.firebasestorage.app',
     iosBundleId: 'com.example.quizproflutter',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCybNjC9H0AU1mEaOFQtH2ZYay0JSZIBo8',
-    appId: '1:122021072464:web:3ff17ade0d1faa83964b55',
-    messagingSenderId: '122021072464',
-    projectId: 'awesomeproject-bfb59',
-    authDomain: 'awesomeproject-bfb59.firebaseapp.com',
-    storageBucket: 'awesomeproject-bfb59.firebasestorage.app',
-    measurementId: 'G-VEDM9MVQFQ',
+    apiKey: 'AIzaSyBaSKT70pXHHNF3CzWrg0TA4YO8d49meVE',
+    appId: '1:85396120151:web:ed862c76d851d2a8337912',
+    messagingSenderId: '85396120151',
+    projectId: 'quizproflutter',
+    authDomain: 'quizproflutter.firebaseapp.com',
+    storageBucket: 'quizproflutter.firebasestorage.app',
+    measurementId: 'G-SLD526J8BP',
   );
+
 }
