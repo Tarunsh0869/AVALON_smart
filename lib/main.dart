@@ -1,21 +1,34 @@
 import 'package:flutter/material.dart';
-import 'screens/splash_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+// Import your navigation screen so the app knows where to start
+import 'package:quizproflutter/screens/main_navigation_screen.dart';
+
+void main() async {
+  // CRITICAL: This must be called before Firebase initializes!
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const QuizProApp());
+
+  // Connects to your new Avalon-Final-DB project
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  runApp(const MyApp());
 }
 
-class QuizProApp extends StatelessWidget {
-  const QuizProApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'AVAlON QuizPro',
       debugShowCheckedModeBanner: false,
-      title: 'AVAlON',
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
-      home: const SplashScreen(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        useMaterial3: true,
+      ),
+      // Set the initial screen
+      home: const MainNavigationScreen(),
     );
   }
 }

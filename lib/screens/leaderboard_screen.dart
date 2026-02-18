@@ -1,83 +1,89 @@
 import 'package:flutter/material.dart';
-import '../globals.dart' as globals; // Connecting to your global state
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LeaderboardScreen extends StatelessWidget {
   const LeaderboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // 1. Fetch the dynamic list from globals instead of a hardcoded const list
-    // We use List.from() to create a copy so we can sort it safely
-    List<Map<String, dynamic>> players = List.from(globals.sessionLeaderboard);
-
-    // 2. Sort the list automatically (Highest score at the top)
-    players.sort((a, b) => b['score'].compareTo(a['score']));
-
     return Scaffold(
-      appBar: AppBar(title: const Text("AVAlON - Global Leaderboard")),
-      body: Column(
-        children: [
-          // Top Rank Banner
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(30),
-            color: Colors.indigo,
-            child: const Column(
-              children: [
-                Icon(Icons.emoji_events, color: Colors.amber, size: 60),
-                Text(
-                  "Top Scorers",
-                  style: TextStyle(
-                    color: Color.fromARGB(255, 237, 156, 156),
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+      body: StreamBuilder<QuerySnapshot>(
+        // Fetch rankings from Cloud Firestore, sorted by highest score and latest timestamp
+        stream: FirebaseFirestore.instance
+            .collection('leaderboard')
+            .orderBy('score', descending: true)
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text("No rankings available yet. Complete a quiz!"),
+            );
+          }
+
+          var docs = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              var data = docs[index].data() as Map<String, dynamic>;
+
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.indigo,
+                    child: Text(
+                      "${index + 1}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    data['name'] ?? "Tarun Sharma",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text("Topic: ${data['category']}"),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "Score: ${data['score']}",
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      // Displaying the time taken from your new stopwatch feature
+                      Text(
+                        "Time: ${data['timeTaken'] ?? '--:--'}",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // Dynamic List of Players
-          Expanded(
-            child: players.isEmpty
-                ? const Center(
-                    child: Text(
-                      "No quizzes taken yet. Be the first!",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: players.length,
-                    itemBuilder: (context, index) {
-                      final player = players[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: index < 3
-                              ? Colors.amber
-                              : Colors.grey[300],
-                          // Dynamically assign rank based on their sorted position
-                          child: Text("#${index + 1}"),
-                        ),
-                        title: Text(
-                          player['name'],
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          "Category: ${player['category'] ?? 'General'}",
-                        ),
-                        trailing: Text(
-                          "${player['score']} pts",
-                          style: const TextStyle(
-                            color: Colors.indigo,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+              );
+            },
+          );
+        },
       ),
     );
   }
 }
+r
