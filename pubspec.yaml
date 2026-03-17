@@ -1,0 +1,41 @@
+name: community_app
+description: "A professional university community application for SVSU students."
+publish_to: 'none' # Prevents accidental publication to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Market standard for modern UI and icons
+  cupertino_icons: ^1.0.6
+  
+  # For the sliding banner/carousel
+  smooth_page_indicator: ^1.1.0 
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  # Professional linting to ensure clean code
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Asset management - Market Standard is grouping by category
+  assets:
+    - assets/images/
+    # - assets/fonts/ (Uncomment if using custom fonts)
+
+  # Example of adding custom fonts for a premium look
+  # fonts:
+  #   - family: Montserrat
+  #     fonts:
+  #       - asset: assets/fonts/Montserrat-Regular.ttf
+  #       - asset: assets/fonts/Montserrat-Bold.ttf
+  #         weight: 700
