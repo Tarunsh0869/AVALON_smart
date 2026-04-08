@@ -81,7 +81,7 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     "Welcome back,",
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha:0.8),
                       fontSize: 16,
                     ),
                   ),
@@ -98,18 +98,6 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      "✓ NASSCOM Data Analytics Trainee",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
                     ),
                   ),
                 ],
@@ -188,7 +176,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -230,7 +218,7 @@ class HomeScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: color.withOpacity(0.1), width: 2),
+          border: Border.all(color: color.withValues(alpha: 0.1), width: 2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

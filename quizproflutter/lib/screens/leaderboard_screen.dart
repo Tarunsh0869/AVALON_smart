@@ -1,23 +1,37 @@
-import 'package:flutter/material.dart';
-import '../globals.dart' as globals; // Connecting to your global state
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
-class LeaderboardScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; //
+import '../view_models/leaderboard_view_model.dart'; //
+
+class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
 
   @override
+  State<LeaderboardScreen> createState() => _LeaderboardScreenState();
+}
+
+class _LeaderboardScreenState extends State<LeaderboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Schedule the heavy work to happen after the UI frame is drawn
+    Future.microtask(() => 
+       context.read<LeaderboardViewModel>().fetchRankings()
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // 1. Fetch the dynamic list from globals instead of a hardcoded const list
-    // We use List.from() to create a copy so we can sort it safely
-    List<Map<String, dynamic>> players = List.from(globals.sessionLeaderboard);
-
-    // 2. Sort the list automatically (Highest score at the top)
-    players.sort((a, b) => b['score'].compareTo(a['score']));
-
     return Scaffold(
-      appBar: AppBar(title: const Text("AVAlON - Global Leaderboard")),
+      appBar: AppBar(
+        title: const Text("AVAlON - Global Leaderboard"),
+        elevation: 0,
+        backgroundColor: Colors.indigo,
+      ),
       body: Column(
         children: [
-          // Top Rank Banner
+          // Header remains consistent for branding
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(30),
@@ -28,7 +42,7 @@ class LeaderboardScreen extends StatelessWidget {
                 Text(
                   "Top Scorers",
                   style: TextStyle(
-                    color: Color.fromARGB(255, 237, 156, 156),
+                    color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -37,44 +51,46 @@ class LeaderboardScreen extends StatelessWidget {
             ),
           ),
 
-          // Dynamic List of Players
+          // REPLACEMENT: Using Consumer for reactive data binding
           Expanded(
-            child: players.isEmpty
-                ? const Center(
-                    child: Text(
-                      "No quizzes taken yet. Be the first!",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: players.length,
-                    itemBuilder: (context, index) {
-                      final player = players[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: index < 3
-                              ? Colors.amber
-                              : Colors.grey[300],
-                          // Dynamically assign rank based on their sorted position
-                          child: Text("#${index + 1}"),
+            child: Consumer<LeaderboardViewModel>(
+              builder: (context, leaderboardVM, child) {
+                if (leaderboardVM.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (leaderboardVM.topScores.isEmpty) {
+                  return const Center(child: Text("No scores found. Be the first!"));
+                }
+
+                return ListView.builder(
+                  itemCount: leaderboardVM.topScores.length,
+                  itemBuilder: (context, index) {
+                    // Extracting Firestore data safely
+                    final player = leaderboardVM.topScores[index];
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: index < 3 ? Colors.amber : Colors.grey[300],
+                        child: Text("#${index + 1}"),
+                      ),
+                      title: Text(
+                        player['name'] ?? 'Unknown',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text("Category: ${player['category'] ?? 'General'}"),
+                      trailing: Text(
+                        "${player['score']} pts",
+                        style: const TextStyle(
+                          color: Colors.indigo,
+                          fontWeight: FontWeight.bold,
                         ),
-                        title: Text(
-                          player['name'],
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          "Category: ${player['category'] ?? 'General'}",
-                        ),
-                        trailing: Text(
-                          "${player['score']} pts",
-                          style: const TextStyle(
-                            color: Colors.indigo,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
