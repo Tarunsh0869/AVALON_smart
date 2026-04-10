@@ -4,8 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Use 10.0.2.2 for Android Emulator, 127.0.0.1 for iOS Simulator
-  final String baseUrl = "http://10.0.2.2:3000"; 
+  final String baseUrl = "http://localhost:3000"; 
 
   Future<void> login(String name, String email) async {
     final url = Uri.parse('$baseUrl/login');
