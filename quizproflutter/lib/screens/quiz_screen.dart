@@ -1,13 +1,18 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/quiz_provider.dart';
-import '../view_models/user_view.dart';
 
 class QuizScreen extends StatefulWidget {
-  final String category;
-  const QuizScreen({super.key, required this.category});
+  final int categoryId;
+  final String categoryName;
+
+  const QuizScreen({
+    super.key,
+    required this.categoryId,
+    required this.categoryName,
+  });
+
   @override
   State<QuizScreen> createState() => _QuizScreenState();
 }
@@ -16,28 +21,42 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        context.read<QuizProvider>().loadQuiz(widget.category));
+    Future.microtask(
+        () => context.read<QuizProvider>().loadQuiz(widget.categoryId));
   }
 
-  Widget _buildCompletionUI(BuildContext context, QuizProvider quiz, UserViewModel user) {
+  Widget _buildResultUI(QuizProvider quiz) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.emoji_events, color: Colors.amber, size: 80),
-            Text("Quiz Completed!", style: Theme.of(context).textTheme.headlineMedium),
-            Text("Score: ${quiz.score} / ${quiz.totalQuestions}"),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await quiz.syncScoreToFirebase(user.userName, widget.category);
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text("Save & Exit"),
-            )
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.emoji_events, color: Colors.amber, size: 80),
+              const SizedBox(height: 16),
+              Text('Quiz Completed!',
+                  style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: 8),
+              if (quiz.score != null)
+                Text('Score: ${quiz.score} / ${quiz.total}',
+                    style: const TextStyle(fontSize: 22)),
+              if (quiz.resultMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(quiz.resultMessage!,
+                      style: const TextStyle(color: Colors.grey)),
+                ),
+              if (quiz.error != null)
+                Text(quiz.error!,
+                    style: const TextStyle(color: Colors.red)),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Back to Home'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -45,43 +64,63 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Use the provider we just updated
     final quiz = context.watch<QuizProvider>();
-    final user = context.read<UserViewModel>();
 
     if (quiz.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Show result screen after submission
+    if (quiz.score != null) return _buildResultUI(quiz);
+
+    // All questions answered — trigger backend submission
+    if (quiz.isFinished) {
+      Future.microtask(() => quiz.submitQuiz(widget.categoryId));
       return const Scaffold(
           body: Center(child: CircularProgressIndicator()));
     }
 
-    // End of quiz logic
-    if (quiz.currentIndex >= quiz.totalQuestions && quiz.totalQuestions > 0) {
-      return _buildCompletionUI(context, quiz, user);
-    }
-
     if (quiz.totalQuestions == 0) {
-      return const Scaffold(body: Center(child: Text("No questions found.")));
+      return const Scaffold(
+          body: Center(child: Text('No questions found.')));
     }
 
-    final q = quiz.currentQuestion;
+    final q = quiz.currentQuestion!;
 
     return Scaffold(
-      appBar: AppBar(title: Text("${widget.category} Assessment")),
-      body: Column(
-        children: [
-          LinearProgressIndicator(
-              value: (quiz.currentIndex + 1) / quiz.totalQuestions),
-          const SizedBox(height: 20),
-          Text(q['question'] ?? '',
-              style:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          // Generate buttons from the shuffled list in provider
-          ...(q['options'] as List? ?? []).map((option) => ElevatedButton(
-                onPressed: () =>
-                    quiz.checkAnswer(option, q['answer'] ?? ''),
-                child: Text(option),
-              )),
-        ],
+      appBar: AppBar(title: Text('${widget.categoryName} Assessment')),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            LinearProgressIndicator(
+                value: (quiz.currentIndex + 1) / quiz.totalQuestions),
+            const SizedBox(height: 8),
+            Text(
+              'Question ${quiz.currentIndex + 1} of ${quiz.totalQuestions}',
+              style: const TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            Text(q.questionText,
+                style: const TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24),
+            ...q.options.map((option) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    // Store answer locally — backend checks correctness
+                    onPressed: () => quiz.selectAnswer(q.id, option),
+                    child: Text(option),
+                  ),
+                )),
+          ],
+        ),
       ),
     );
   }

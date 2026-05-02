@@ -1,5 +1,9 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+// WARNING: This file defines a duplicate 'HomeScreen' class.
+// The active HomeScreen used by the app is in home_screen.dart.
+// This file (topics_screen.dart) is currently not imported anywhere.
+// Do NOT import both files in the same scope — it will cause a compile error.
 import 'package:flutter/material.dart';
 import 'quiz_screen.dart';
 
@@ -13,10 +17,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> categories = [
-      {"title": "Python", "icon": Icons.code, "color": Colors.orange},
-      {"title": "SQL", "icon": Icons.storage, "color": Colors.blue},
-      {"title": "UI/UX", "icon": Icons.design_services, "color": Colors.pink},
-      {"title": "Data Science", "icon": Icons.analytics, "color": Colors.green},
+      {"id": 1, "title": "Python",      "icon": Icons.code,           "color": Colors.orange},
+      {"id": 2, "title": "SQL",          "icon": Icons.storage,        "color": Colors.blue},
+      {"id": 3, "title": "UI/UX",        "icon": Icons.design_services, "color": Colors.pink},
+      {"id": 4, "title": "Data Science", "icon": Icons.analytics,      "color": Colors.green},
     ];
 
     return Scaffold(
@@ -79,8 +83,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              QuizScreen(category: categories[index]['title']),
+                          builder: (context) => QuizScreen(
+                              categoryId: categories[index]['id'],
+                              categoryName: categories[index]['title'],
+                            ),
                         ),
                       );
                     },
@@ -101,9 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: categories[index]['color'].withOpacity(
-                                0.1,
-                              ),
+                              color: (categories[index]['color'] as Color).withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(

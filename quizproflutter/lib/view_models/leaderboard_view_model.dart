@@ -1,32 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../data/repositories/leaderboard_repository.dart';
+import '../data/models/leaderboard_model.dart';
 
 class LeaderboardViewModel with ChangeNotifier {
-  List<Map<String, dynamic>> _topScores = [];
-  bool _isLoading = false;
+  final LeaderboardRepository _repo = LeaderboardRepository();
 
-  List<Map<String, dynamic>> get topScores => _topScores;
+  List<LeaderboardModel> _entries = [];
+  bool _isLoading = false;
+  String? _error;
+
+  List<LeaderboardModel> get entries => _entries;
   bool get isLoading => _isLoading;
+  String? get error => _error;
 
   Future<void> fetchRankings() async {
-    // Prevent redundant calls if already loading
     if (_isLoading) return;
-
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {
-      // Use async get() to fetch data off the main thread
-      final snapshot = await FirebaseFirestore.instance
-          .collection('leaderboard')
-          .orderBy('score', descending: true)
-          .limit(20)
-          .get();
-
-      // Mapping happens here, not in the widget build()
-      _topScores = snapshot.docs.map((doc) => doc.data()).toList();
+      _entries = (await _repo.fetchRankings()).cast<LeaderboardModel>();
     } catch (e) {
-      debugPrint("Leaderboard Error: $e");
+      _error = e.toString();
     } finally {
       _isLoading = false;
       notifyListeners();

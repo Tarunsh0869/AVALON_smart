@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../globals.dart' as globals;
+import 'package:provider/provider.dart';
+import '../view_models/user_view.dart';
 import 'quiz_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -86,7 +87,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    globals.currentUserName,
+                    context.watch<UserViewModel>().userName,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
@@ -139,25 +140,10 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildModuleCard(context, "Python", Icons.code, Colors.blue),
-                  _buildModuleCard(
-                    context,
-                    "SQL",
-                    Icons.storage,
-                    Colors.orange,
-                  ),
-                  _buildModuleCard(
-                    context,
-                    "UI/UX",
-                    Icons.palette,
-                    Colors.pink,
-                  ),
-                  _buildModuleCard(
-                    context,
-                    "Data Sci",
-                    Icons.analytics,
-                    Colors.purple,
-                  ),
+                  _buildModuleCard(context, "Python",    Icons.code,      Colors.blue,   1),
+                  _buildModuleCard(context, "SQL",        Icons.storage,   Colors.orange, 2),
+                  _buildModuleCard(context, "UI/UX",      Icons.palette,   Colors.pink,   3),
+                  _buildModuleCard(context, "Data Sci",   Icons.analytics, Colors.purple, 4),
                 ],
               ),
             ),
@@ -205,12 +191,18 @@ class HomeScreen extends StatelessWidget {
     String title,
     IconData icon,
     Color color,
+    int categoryId,
   ) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => QuizScreen(category: title)),
+          MaterialPageRoute(
+            builder: (context) => QuizScreen(
+              categoryId: categoryId,
+              categoryName: title,
+            ),
+          ),
         );
       },
       borderRadius: BorderRadius.circular(24),
