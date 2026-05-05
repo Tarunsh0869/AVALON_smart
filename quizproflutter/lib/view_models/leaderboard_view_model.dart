@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import '../data/repositories/leaderboard_repository.dart';
-import '../data/models/leaderboard_model.dart';
+import '../domain/entities/leaderboard_entry.dart';
 
 class LeaderboardViewModel with ChangeNotifier {
   final LeaderboardRepository _repo = LeaderboardRepository();
 
-  List<LeaderboardModel> _entries = [];
+  List<LeaderboardEntry> _entries = [];
   bool _isLoading = false;
   String? _error;
 
-  List<LeaderboardModel> get entries => _entries;
+  List<LeaderboardEntry> get entries => _entries;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -20,7 +20,7 @@ class LeaderboardViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      _entries = (await _repo.fetchRankings()).cast<LeaderboardModel>();
+      _entries = await _repo.fetchRankings();
     } catch (e) {
       _error = e.toString();
     } finally {

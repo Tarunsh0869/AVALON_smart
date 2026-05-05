@@ -1,10 +1,54 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/user_view.dart';
+import '../view_models/leaderboard_view_model.dart';
+import '../core/storage/token_storage.dart';
 import 'quiz_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _topCategory = "--";
+  String _latestScore = "--";
+  String _globalRank = "--";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    final userData = await TokenStorage.getUserData();
+    if (userData == null) return;
+
+    final userId = userData['id'];
+    final vm = context.read<LeaderboardViewModel>();
+    await vm.fetchRankings();
+
+    if (vm.entries.isEmpty) return;
+
+    final userEntries = vm.entries.where((e) => e.userId == userId).toList();
+    if (userEntries.isEmpty) return;
+
+    userEntries.sort((a, b) => b.bestScore.compareTo(a.bestScore));
+    final topEntry = userEntries.first;
+
+    final userRank = vm.entries.indexWhere((e) => e.userId == userId) + 1;
+
+    setState(() {
+      _topCategory = topEntry.category;
+      _latestScore = "${topEntry.bestScore}/10";
+      _globalRank = userRank > 0 ? "#$userRank" : "--";
+    });
+  }
 
   // Celebration Dialog Logic
   void _showCelebrationDialog(BuildContext context, String category) {
@@ -111,9 +155,9 @@ class HomeScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildStatCard("Top Category", "Python", Colors.orange),
-                  _buildStatCard("Latest Score", "9/10", Colors.green),
-                  _buildStatCard("Global Rank", "#1", Colors.blue),
+                  _buildStatCard("Top Category", _topCategory, Colors.orange),
+                  _buildStatCard("Latest Score", _latestScore, Colors.green),
+                  _buildStatCard("Global Rank", _globalRank, Colors.blue),
                 ],
               ),
             ),

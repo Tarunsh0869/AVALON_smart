@@ -53,9 +53,35 @@ class QuizProvider with ChangeNotifier {
   // option is the full option string — backend matches against CorrectOption
   void selectAnswer(int questionId, String option) {
     _answers[questionId] = option;
-    _currentIndex++;
     notifyListeners();
   }
+
+  void nextQuestion() {
+    if (_currentIndex < _questions.length - 1) {
+      _currentIndex++;
+      notifyListeners();
+    }
+  }
+
+  void previousQuestion() {
+    if (_currentIndex > 0) {
+      _currentIndex--;
+      notifyListeners();
+    }
+  }
+
+  void skipQuestion() {
+    if (_currentIndex < _questions.length - 1) {
+      _currentIndex++;
+      notifyListeners();
+    }
+  }
+
+  bool get canGoBack => _currentIndex > 0;
+  bool get canGoNext => _currentIndex < _questions.length - 1;
+  bool get isLastQuestion => _currentIndex == _questions.length - 1;
+  int get answeredCount => _answers.length;
+  String? getAnswer(int questionId) => _answers[questionId];
 
   Future<void> submitQuiz(int categoryId) async {
     _isLoading = true;

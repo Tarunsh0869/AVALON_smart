@@ -9,12 +9,11 @@ namespace avalon_backend.Controllers;
 [Route("api/leaderboard")]
 public class LeaderboardController(AppDbContext db) : ControllerBase
 {
-    // GET api/leaderboard/{categoryId}
-    [HttpGet("{categoryId}")]
-    public async Task<IActionResult> GetTop(int categoryId)
+    // GET api/leaderboard
+    [HttpGet]
+    public async Task<IActionResult> GetTop()
     {
         var entries = await db.Leaderboards
-            .Where(l => l.CategoryId == categoryId)
             .Include(l => l.User)
             .Include(l => l.Category)
             .OrderByDescending(l => l.BestScore)
@@ -22,7 +21,7 @@ public class LeaderboardController(AppDbContext db) : ControllerBase
             .ToListAsync();
 
         var result = entries.Select((l, index) =>
-            new LeaderboardDto(index + 1, l.User.Name, l.Category.Name, l.BestScore));
+            new LeaderboardDto(index + 1, l.UserId, l.User.Name, l.Category.Name, l.BestScore));
 
         return Ok(result);
     }

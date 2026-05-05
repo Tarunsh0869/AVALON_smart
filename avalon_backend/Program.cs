@@ -43,7 +43,7 @@ builder.Services.AddCors(opt =>
         p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 // C#
-builder.WebHost.UseUrls("https://127.0.0.1:5002", "http://127.0.0.1:5000");
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {

@@ -36,4 +36,4 @@ public record SubmitQuizResponseDto(int Score, int Total, string Message);
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 
-public record LeaderboardDto(int Rank, string UserName, string Category, int BestScore);
+public record LeaderboardDto(int Rank, int UserId, string UserName, string Category, int BestScore);

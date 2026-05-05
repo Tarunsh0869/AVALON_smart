@@ -36,6 +36,13 @@ class ApiService {
 
   static dynamic _handle(http.Response res) {
     final data = res.body.isNotEmpty ? jsonDecode(res.body) : null;
+    
+    // Handle 401 Unauthorized — token expired or invalid
+    if (res.statusCode == 401) {
+      TokenStorage.clearAll(); // Auto-logout on token expiry
+      throw Exception('Session expired. Please login again.');
+    }
+    
     if (res.statusCode >= 200 && res.statusCode < 300) return data;
     throw Exception(data?['message'] ?? 'Server error (${res.statusCode})');
   }

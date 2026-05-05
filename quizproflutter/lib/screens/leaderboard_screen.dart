@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_models/leaderboard_view_model.dart';
@@ -56,29 +58,35 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 }
 
                 if (vm.entries.isEmpty) {
-                  return const Center(
-                      child: Text('No scores found. Be the first!'));
+                  return RefreshIndicator(
+                    onRefresh: () => vm.fetchRankings(),
+                    child: const Center(
+                        child: Text('No scores found. Be the first!')),
+                  );
                 }
 
-                return ListView.builder(
-                  itemCount: vm.entries.length,
-                  itemBuilder: (context, index) {
-                    final entry = vm.entries[index];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor:
-                            entry.rank <= 3 ? Colors.amber : Colors.grey[300],
-                        child: Text('#${entry.rank}'),
-                      ),
-                      title: Text(entry.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('Category: ${entry.category}'),
-                      trailing: Text('${entry.bestScore} pts',
-                          style: const TextStyle(
-                              color: Colors.indigo,
-                              fontWeight: FontWeight.bold)),
-                    );
-                  },
+                return RefreshIndicator(
+                  onRefresh: () => vm.fetchRankings(),
+                  child: ListView.builder(
+                    itemCount: vm.entries.length,
+                    itemBuilder: (context, index) {
+                      final entry = vm.entries[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor:
+                              entry.rank <= 3 ? Colors.amber : Colors.grey[300],
+                          child: Text('#${entry.rank}'),
+                        ),
+                        title: Text(entry.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text('Category: ${entry.category}'),
+                        trailing: Text('${entry.bestScore} pts',
+                            style: const TextStyle(
+                                color: Colors.indigo,
+                                fontWeight: FontWeight.bold)),
+                      );
+                    },
+                  ),
                 );
               },
             ),

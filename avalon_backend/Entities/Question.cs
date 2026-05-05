@@ -16,7 +16,7 @@ public class Question
     [Required]
     public string OptionsJson { get; set; } = string.Empty;
 
-    // e.g. "A" — NEVER exposed to Flutter
-    [Required, MaxLength(5)]
+    // Correct answer text — NEVER exposed to Flutter
+    [Required, MaxLength(200)]
     public string CorrectOption { get; set; } = string.Empty;
 }
